@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    container_name: parkease-web
+    ports:
+      - "5000:5000"
+    restart: always
+    networks:
+      - parkease-net
+
+  iot-sensor:
+    image: python:3.9-slim
+    container_name: parkease-iot-simulator
+    restart: always
+    command: python -c "import time, urllib.request; print('IoT Sensor Node initialized for Vashi Station...'); [ (urllib.request.urlopen('http://web:5000/api/status?branch=vashi'), print('[IoT Node] BLE/Wi-Fi heartbeat sent successfully.')) for _ in iter(int, 1) if time.sleep(10) is None ]"
+    depends_on:
+      - web
+    networks:
+      - parkease-net
+
+networks:
+  parkease-net:
+    driver: bridge
